@@ -1,0 +1,36 @@
+# clangd + ESP32 (GCC Xtensa): sem isto o Clang usa headers da glibc em /usr/include
+# (ex.: bits/libc-header-start.h). -nostdinc* + a cadeia do toolchain alinham com o GCC real.
+# Ajusta só o IntelliSense; o build continua a ser o PlatformIO.
+---
+If:
+  PathMatch: .*
+
+CompileFlags:
+  Add:
+    - -nostdinc++
+    - -nostdinc
+    - -nobuiltininc
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/xtensa-esp32-elf
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/xtensa-esp32-elf/esp32-psram/no-rtti
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/backward
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/lib/gcc/xtensa-esp32-elf/8.4.0/include
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/lib/gcc/xtensa-esp32-elf/8.4.0/include-fixed
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/sys-include
+    - -isystem
+    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include
+  Remove:
+    - -mfix-esp32-psram-cache-issue
+    - -mfix-esp32-psram-cache-strategy=memw
+    - -mlongcalls
+    - -fstrict-volatile-bitfields
+    - -fno-tree-switch-conversion
+    - -fno-jump-tables
+# --query-driver: .vscode/settings.json → clangd.arguments
