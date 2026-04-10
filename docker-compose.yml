@@ -15,16 +15,5 @@ services:
       timeout: 5s
       retries: 5
 
-  mqtt:
-    image: eclipse-mosquitto:2
-    ports:
-      - "${MQTT_PORT:-1883}:1883"
-    volumes:
-      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - mosquitto_data:/mosquitto/data
-      - mosquitto_log:/mosquitto/log
-
 volumes:
   postgres_data:
-  mosquitto_data:
-  mosquitto_log:
