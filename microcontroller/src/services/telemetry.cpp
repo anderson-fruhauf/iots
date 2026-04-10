@@ -17,6 +17,11 @@ void telemetryInit(const char* deviceId, const char* telemetryTopic) {
   s_dht.setup(DHT_PIN, DHT_TYPE);
 }
 
+void telemetryTask() {
+  TelemetryData telemetryData = getSensorData();
+  telemetryPublish(telemetryData);
+}
+
 TelemetryData getSensorData() {
   TelemetryData out{};
   TempAndHumidity sample = s_dht.getTempAndHumidity();

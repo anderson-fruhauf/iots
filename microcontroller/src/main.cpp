@@ -25,11 +25,6 @@ static char deviceId[20];
 static char telemetryTopic[72];
 static Ticker timerTemp;
 
-void telemetryTask() {
-  TelemetryData telemetryData = getSensorData();
-  telemetryPublish(telemetryData);
-}
-
 void setup() {
   Serial.begin(115200);
   delay(200);
