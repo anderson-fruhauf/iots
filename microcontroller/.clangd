@@ -3,7 +3,7 @@
 # --query-driver no .vscode/settings.json permite ao clangd consultar o xtensa-g++
 # e achar newlib (ex.: machine/endian.h). BuiltinHeaders: QueryDriver usa esses includes.
 ---
-# O compiledb do PlatformIO costuma omitir -I das libs; sem isso o clangd não acha WiFi.h / PubSubClient / DHTesp.
+# O compiledb do PlatformIO costuma omitir -I das libs; sem isso o clangd não acha headers do framework / lib_deps.
 CompileFlags:
   CompilationDatabase: .
   BuiltinHeaders: QueryDriver
@@ -11,6 +11,8 @@ CompileFlags:
   Add:
     - -I
     - '~/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src'
+    - -I
+    - '~/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src'
     - -I
     - .pio/libdeps/esp32doit-devkit-v1/PubSubClient/src
     - -I

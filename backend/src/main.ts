@@ -5,6 +5,8 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const port = Number(process.env.PORT ?? 3000);
+  
   if (!process.env.DATABASE_URL) {
     throw new Error(
       'Defina DATABASE_URL no ambiente (ex.: arquivo .env na raiz do backend).',
@@ -12,7 +14,7 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule);
-  await app.connectMicroservice<MicroserviceOptions>({
+  app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.MQTT,
     options: {
       url: process.env.MQTT_URL ?? 'mqtt://127.0.0.1:1883',
@@ -20,7 +22,6 @@ async function bootstrap() {
     },
   });
   await app.startAllMicroservices();
-  const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);
 }
 bootstrap();
