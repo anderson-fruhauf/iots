@@ -1,13 +1,25 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { LiveTelemetryPanel } from "~/components/telemetry/LiveTelemetryPanel";
+import { useTelemetryEvents } from "~/lib/hooks/useTelemetryEvents";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "IOT App" },
-    { name: "description", content: "Welcome to App!" },
+    { title: "IOTS — Ao vivo" },
+    { name: "description", content: "Telemetria mais recente do backend." },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  const { data, error, loading, refresh } = useTelemetryEvents(1, {
+    refetchIntervalMs: 15_000,
+  });
+
+  return (
+    <LiveTelemetryPanel
+      events={data ?? []}
+      loading={loading}
+      error={error}
+      onRefresh={refresh}
+    />
+  );
 }
