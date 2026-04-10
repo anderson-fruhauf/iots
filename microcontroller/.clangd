@@ -1,31 +1,20 @@
-# clangd + ESP32 (GCC Xtensa): sem isto o Clang usa headers da glibc em /usr/include
-# (ex.: bits/libc-header-start.h). -nostdinc* + a cadeia do toolchain alinham com o GCC real.
-# Ajusta só o IntelliSense; o build continua a ser o PlatformIO.
+# IntelliSense (clangd): usa o compile_commands.json do PlatformIO.
+# Regenerar após mudar libs/flags: pio run -t compiledb
+# --query-driver no .vscode/settings.json permite ao clangd consultar o xtensa-g++
+# e achar newlib (ex.: machine/endian.h). BuiltinHeaders: QueryDriver usa esses includes.
 ---
-If:
-  PathMatch: .*
-
+# O compiledb do PlatformIO costuma omitir -I das libs; sem isso o clangd não acha WiFi.h / PubSubClient / DHTesp.
 CompileFlags:
+  CompilationDatabase: .
+  BuiltinHeaders: QueryDriver
+  # -I e caminho separados; caminhos com "~" entre aspas (YAML 1.1: ~ sozinho = null).
   Add:
-    - -nostdinc++
-    - -nostdinc
-    - -nobuiltininc
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/xtensa-esp32-elf
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/xtensa-esp32-elf/esp32-psram/no-rtti
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include/c++/8.4.0/backward
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/lib/gcc/xtensa-esp32-elf/8.4.0/include
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/lib/gcc/xtensa-esp32-elf/8.4.0/include-fixed
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/sys-include
-    - -isystem
-    - /home/anderson/.platformio/packages/toolchain-xtensa-esp32/xtensa-esp32-elf/include
+    - -I
+    - '~/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src'
+    - -I
+    - .pio/libdeps/esp32doit-devkit-v1/PubSubClient/src
+    - -I
+    - .pio/libdeps/esp32doit-devkit-v1/DHT sensor library for ESPx
   Remove:
     - -mfix-esp32-psram-cache-issue
     - -mfix-esp32-psram-cache-strategy=memw
@@ -33,4 +22,3 @@ CompileFlags:
     - -fstrict-volatile-bitfields
     - -fno-tree-switch-conversion
     - -fno-jump-tables
-# --query-driver: .vscode/settings.json → clangd.arguments
