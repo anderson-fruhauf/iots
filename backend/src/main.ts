@@ -5,14 +5,14 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  console.log('iniciando backend');
   const port = Number(process.env.PORT ?? 3000);
-  
+
   if (!process.env.DATABASE_URL) {
     throw new Error(
       'Defina DATABASE_URL no ambiente (ex.: arquivo .env na raiz do backend).',
     );
   }
-
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()) ?? true,
@@ -26,6 +26,6 @@ async function bootstrap() {
     },
   });
   await app.startAllMicroservices();
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
