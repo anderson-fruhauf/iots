@@ -13,22 +13,55 @@ import { GlassCard } from "~/components/ui/GlassCard";
 import type { TelemetryEvent } from "~/lib/telemetry";
 
 export type ChartPoint = {
+  /** Instante em ms (epoch); eixo X real para escala temporal correta */
+  t: number;
+  /** Texto completo para tooltip (data + hora) */
   label: string;
   temp: number | null;
   hum: number | null;
 };
 
-function toChartPoints(events: TelemetryEvent[]): ChartPoint[] {
-  const chronological = [...events].reverse();
-  return chronological.map((e) => ({
-    label: new Date(e.receivedAt).toLocaleTimeString("pt-BR", {
+function formatAxisTick(ts: number, firstT: number, lastT: number): string {
+  const d = new Date(ts);
+  const start = new Date(firstT);
+  const end = new Date(lastT);
+  const sameCalendarDay =
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate();
+
+  if (sameCalendarDay) {
+    return d.toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit",
-    }),
-    temp: e.temperature,
-    hum: e.humidity,
-  }));
+    });
+  }
+  return d.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function toChartPoints(events: TelemetryEvent[]): ChartPoint[] {
+  const sorted = [...events].sort(
+    (a, b) =>
+      new Date(a.receivedAt).getTime() - new Date(b.receivedAt).getTime(),
+  );
+  return sorted.map((e) => {
+    const instant = new Date(e.receivedAt);
+    const t = instant.getTime();
+    return {
+      t,
+      label: instant.toLocaleString("pt-BR", {
+        dateStyle: "short",
+        timeStyle: "medium",
+      }),
+      temp: e.temperature,
+      hum: e.humidity,
+    };
+  });
 }
 
 const tooltipStyle = {
@@ -45,6 +78,8 @@ type Props = {
 
 export function TelemetryHistoryChart({ events, loading }: Props) {
   const points = toChartPoints(events);
+  const firstT = points[0]?.t ?? 0;
+  const lastT = points[points.length - 1]?.t ?? 0;
 
   return (
     <GlassCard className="min-h-[420px]">
@@ -69,7 +104,10 @@ export function TelemetryHistoryChart({ events, loading }: Props) {
       ) : (
         <div className="h-[340px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={points} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <ComposedChart
+              data={points}
+              margin={{ top: 8, right: 8, left: 0, bottom: 8 }}
+            >
               <defs>
                 <linearGradient id="fillTemp" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#a855f7" stopOpacity={0.45} />
@@ -82,11 +120,17 @@ export function TelemetryHistoryChart({ events, loading }: Props) {
                 vertical={false}
               />
               <XAxis
-                dataKey="label"
-                tick={{ fill: "rgba(196, 181, 253, 0.75)", fontSize: 11 }}
+                dataKey="t"
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                scale="time"
+                tick={{ fill: "rgba(196, 181, 253, 0.75)", fontSize: 10 }}
                 tickLine={false}
                 axisLine={{ stroke: "rgba(139, 92, 246, 0.25)" }}
-                interval="preserveStartEnd"
+                minTickGap={28}
+                tickFormatter={(value) =>
+                  formatAxisTick(Number(value), firstT, lastT)
+                }
               />
               <YAxis
                 yAxisId="t"
@@ -120,6 +164,10 @@ export function TelemetryHistoryChart({ events, loading }: Props) {
               <Tooltip
                 contentStyle={tooltipStyle}
                 labelStyle={{ color: "#ddd6fe" }}
+                labelFormatter={(_, payload) => {
+                  const p = payload?.[0]?.payload as ChartPoint | undefined;
+                  return p?.label ?? "";
+                }}
                 formatter={(value, name) => {
                   const v = value as number | string | undefined;
                   if (v === undefined) return ["—", String(name)];
