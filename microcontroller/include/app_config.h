@@ -14,4 +14,4 @@ static constexpr uint32_t MQTT_FAIL_LOG_INTERVAL_MS = 5000;
  * Intervalo entre envios (segundos) — primeiro argumento de Ticker::attach(segundos, ...).
  * Ex.: 1800 = 30 min; 3600 = 1 h.
  */
-static constexpr float TELEMETRY_INTERVAL_S = 60;
+static constexpr float TELEMETRY_INTERVAL_S = 1800;

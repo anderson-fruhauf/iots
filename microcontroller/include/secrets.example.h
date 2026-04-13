@@ -12,7 +12,7 @@
 // Mosquitto. No EasyPanel: publique a porta TCP do container (ex. 1883:1883), verifique
 // firewall, e teste de outra rede: mosquitto_sub -h <host> -p 1883 -t test -v
 // (se falhar no PC, o ESP também não conectará). PubSubClient não usa MQTT WebSocket.
-#define MQTT_HOST "iot-mqtt.mxl9lo.easypanel.host"
+#define MQTT_HOST "mqtt.host"
 #define MQTT_PORT 1883
 #define MQTT_USE_TLS 0
 
