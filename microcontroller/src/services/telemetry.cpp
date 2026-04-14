@@ -24,14 +24,20 @@ void telemetryTask() {
 
 TelemetryData getSensorData() {
   TelemetryData out{};
-  TempAndHumidity sample = s_dht.getTempAndHumidity();
-  if (s_dht.getStatus() != 0) {
-    Serial.printf("DHT erro: %s\n", s_dht.getStatusString());
-    return out;
+  constexpr int kAttempts = 3;
+  for (int attempt = 0; attempt < kAttempts; ++attempt) {
+    TempAndHumidity sample = s_dht.getTempAndHumidity();
+    if (s_dht.getStatus() == 0) {
+      out.temperature = sample.temperature;
+      out.humidity = sample.humidity;
+      out.ok = true;
+      return out;
+    }
+    if (attempt + 1 < kAttempts) {
+      delay(150);
+    }
   }
-  out.temperature = sample.temperature;
-  out.humidity = sample.humidity;
-  out.ok = true;
+  Serial.printf("DHT erro: %s\n", s_dht.getStatusString());
   return out;
 }
 

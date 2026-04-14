@@ -10,6 +10,7 @@ CompileFlags:
   # Framework em ~/.platformio: usar ${HOME} — '~' literal não é expandido pelo clangd.
   Add:
     - -I${HOME}/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src
+    - -I${HOME}/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src
     - -I${HOME}/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src
     - -I
     - .pio/libdeps/esp32doit-devkit-v1/PubSubClient/src

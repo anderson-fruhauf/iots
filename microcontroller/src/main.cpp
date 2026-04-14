@@ -17,18 +17,28 @@
 #include "device/device_id.h"
 #include "infra/led.h"
 #include "infra/mqtt.h"
+#include "infra/screen.h"
 #include "infra/wifi.h"
 #include "services/activity_signal.h"
+#include "services/display_sensor.h"
 #include "services/telemetry.h"
 
 static char deviceId[20];
 static char telemetryTopic[72];
-static Ticker timerTemp;
+static Ticker timerTelemetry;
+static Ticker timerScreen;
+
+static void tickScreen() {
+  screenSetNetwork(WiFi.status() == WL_CONNECTED, mqttConnected());
+  displaySensorPoll();
+  screenRefresh();
+}
 
 void setup() {
   Serial.begin(115200);
   delay(200);
   ledInit();
+  screenInit();
 
   wifiStaMode();
   deviceIdFromMac(deviceId, sizeof(deviceId));
@@ -49,7 +59,9 @@ void setup() {
   mqttReconnect(deviceId);
 
   activeSignal(telemetryTask)();
-  timerTemp.attach(TELEMETRY_INTERVAL_S, activeSignal(telemetryTask));
+  tickScreen();
+  timerTelemetry.attach(TELEMETRY_INTERVAL_S, activeSignal(telemetryTask));
+  timerScreen.attach(SCREEN_REFRESH_INTERVAL_S, tickScreen);
 }
 
 void loop() {
@@ -63,5 +75,6 @@ void loop() {
     return;
   }
   mqttLoop();
-  delay(50);
+
+  delay(100);
 }
