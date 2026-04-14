@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { GlassCard } from "~/components/ui/GlassCard";
-import type { TelemetryEvent } from "~/lib/telemetry";
+import type { TelemetryReading } from "~/lib/telemetry";
 
 export type ChartPoint = {
   /** Instante em ms (epoch); eixo X real para escala temporal correta */
@@ -44,13 +44,13 @@ function formatAxisTick(ts: number, firstT: number, lastT: number): string {
   });
 }
 
-function toChartPoints(events: TelemetryEvent[]): ChartPoint[] {
-  const sorted = [...events].sort(
+function toChartPoints(readings: TelemetryReading[]): ChartPoint[] {
+  const sorted = [...readings].sort(
     (a, b) =>
-      new Date(a.receivedAt).getTime() - new Date(b.receivedAt).getTime(),
+      new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime(),
   );
   return sorted.map((e) => {
-    const instant = new Date(e.receivedAt);
+    const instant = new Date(e.recordedAt);
     const t = instant.getTime();
     return {
       t,
@@ -72,12 +72,12 @@ const tooltipStyle = {
 };
 
 type Props = {
-  events: TelemetryEvent[];
+  readings: TelemetryReading[];
   loading: boolean;
 };
 
-export function TelemetryHistoryChart({ events, loading }: Props) {
-  const points = toChartPoints(events);
+export function TelemetryHistoryChart({ readings, loading }: Props) {
+  const points = toChartPoints(readings);
   const firstT = points[0]?.t ?? 0;
   const lastT = points[points.length - 1]?.t ?? 0;
 
@@ -89,7 +89,8 @@ export function TelemetryHistoryChart({ events, loading }: Props) {
             Série temporal
           </h2>
           <p className="text-sm text-violet-300/70">
-            Até {points.length} pontos (ordem cronológica)
+            {points.length}{" "}
+            {points.length === 1 ? "ponto no período" : "pontos no período"}
           </p>
         </div>
         {loading && (
@@ -99,7 +100,8 @@ export function TelemetryHistoryChart({ events, loading }: Props) {
 
       {points.length === 0 ? (
         <p className="py-16 text-center text-violet-300/70">
-          Sem dados para o gráfico. Aguarde telemetria ou verifique a API.
+          Ainda não há dados suficientes para o gráfico. Aguarde novas leituras ou
+          atualize a página.
         </p>
       ) : (
         <div className="h-[340px] w-full">

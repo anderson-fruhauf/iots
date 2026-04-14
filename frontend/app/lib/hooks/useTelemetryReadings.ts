@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  type TelemetryEvent,
-  fetchTelemetryEvents,
+  type TelemetryReading,
+  fetchTelemetryReadings,
 } from "~/lib/telemetry";
 
 type Options = {
@@ -9,18 +9,22 @@ type Options = {
   refetchIntervalMs?: number;
 };
 
-export function useTelemetryEvents(limit: number, options?: Options) {
-  const [data, setData] = useState<TelemetryEvent[] | null>(null);
+export function useTelemetryReadings(limit: number, options?: Options) {
+  const [data, setData] = useState<TelemetryReading[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     try {
       setError(null);
-      const rows = await fetchTelemetryEvents(limit);
+      const rows = await fetchTelemetryReadings(limit);
       setData(rows);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Falha ao carregar telemetria");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Não foi possível carregar os dados. Tente novamente.",
+      );
     } finally {
       setLoading(false);
     }

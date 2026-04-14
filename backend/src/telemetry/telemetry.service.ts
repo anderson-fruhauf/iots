@@ -1,18 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TelemetryEvent } from './telemetry-event.entity';
+import { TelemetryReading } from './telemetry-reading.entity';
 
 @Injectable()
 export class TelemetryService {
   private readonly logger = new Logger(TelemetryService.name);
 
   constructor(
-    @InjectRepository(TelemetryEvent)
-    private readonly repo: Repository<TelemetryEvent>,
+    @InjectRepository(TelemetryReading)
+    private readonly repo: Repository<TelemetryReading>,
   ) {}
 
-  async ingestFromMqtt(topic: string, data: unknown): Promise<TelemetryEvent> {
+  async ingestFromMqtt(topic: string, data: unknown): Promise<TelemetryReading> {
     const payload = this.normalizePayload(data);
     const deviceId =
       (typeof payload.deviceId === 'string' && payload.deviceId) ||
@@ -22,24 +22,23 @@ export class TelemetryService {
     }
     const temperature = this.toNumber(payload.temperature);
     const humidity = this.toNumber(payload.humidity);
-    const unit = typeof payload.unit === 'string' ? payload.unit : null;
 
     const row = this.repo.create({
       deviceId: deviceId ?? 'unknown',
       temperature,
       humidity,
-      unit,
-      mqttTopic: topic,
-      rawPayload: payload,
+      recordedAt: new Date(),
     });
     const saved = await this.repo.save(row);
-    this.logger.debug(`Telemetria salva: ${saved.id} device=${saved.deviceId}`);
+    this.logger.debug(
+      `Telemetria salva: device=${saved.deviceId} em ${saved.recordedAt.toISOString()}`,
+    );
     return saved;
   }
 
-  findRecent(limit = 50): Promise<TelemetryEvent[]> {
+  findRecent(limit = 50): Promise<TelemetryReading[]> {
     return this.repo.find({
-      order: { receivedAt: 'DESC' },
+      order: { recordedAt: 'DESC' },
       take: Math.min(limit, 200),
     });
   }

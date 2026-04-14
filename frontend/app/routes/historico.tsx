@@ -1,16 +1,19 @@
 import type { Route } from "./+types/historico";
 import { TelemetryHistoryChart } from "~/components/telemetry/TelemetryHistoryChart";
-import { useTelemetryEvents } from "~/lib/hooks/useTelemetryEvents";
+import { useTelemetryReadings } from "~/lib/hooks/useTelemetryReadings";
 
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "IOTS — Histórico" },
-    { name: "description", content: "Gráfico de histórico de telemetria." },
+    {
+      name: "description",
+      content: "Histórico de temperatura e umidade ao longo do tempo.",
+    },
   ];
 }
 
 export default function Historico() {
-  const { data, error, loading, refresh } = useTelemetryEvents(200, {
+  const { data, error, loading, refresh } = useTelemetryReadings(200, {
     refetchIntervalMs: 30_000,
   });
 
@@ -22,11 +25,8 @@ export default function Historico() {
             Histórico
           </h1>
           <p className="mt-2 max-w-2xl text-violet-200/75">
-            Visualização das últimas leituras retornadas por{" "}
-            <code className="rounded-md bg-white/5 px-1.5 py-0.5 text-sm">
-              GET /telemetry/events?limit=200
-            </code>
-            , em ordem cronológica no gráfico.
+            Evolução das últimas leituras em ordem cronológica. Os dados são
+            atualizados automaticamente.
           </p>
         </div>
         <button
@@ -45,7 +45,7 @@ export default function Historico() {
         </div>
       )}
 
-      <TelemetryHistoryChart events={data ?? []} loading={loading} />
+      <TelemetryHistoryChart readings={data ?? []} loading={loading} />
     </div>
   );
 }

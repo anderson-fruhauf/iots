@@ -5,7 +5,7 @@ import { TelemetryService } from './telemetry.service';
 export class TelemetryHttpController {
   constructor(private readonly telemetryService: TelemetryService) {}
 
-  @Get('events')
+  @Get('readings')
   list(@Query('limit') limit?: string) {
     const n = limit ? parseInt(limit, 10) : 50;
     return this.telemetryService.findRecent(Number.isNaN(n) ? 50 : n);

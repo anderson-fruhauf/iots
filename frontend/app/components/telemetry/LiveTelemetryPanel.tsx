@@ -1,6 +1,5 @@
 import { GlassCard } from "~/components/ui/GlassCard";
-import { API_BASE } from "~/lib/env";
-import { pickLatest, type TelemetryEvent } from "~/lib/telemetry";
+import { pickLatest, type TelemetryReading } from "~/lib/telemetry";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -42,14 +41,14 @@ function Metric({
 }
 
 type Props = {
-  events: TelemetryEvent[];
+  readings: TelemetryReading[];
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
 };
 
-export function LiveTelemetryPanel({ events, loading, error, onRefresh }: Props) {
-  const latest = pickLatest(events);
+export function LiveTelemetryPanel({ readings, loading, error, onRefresh }: Props) {
+  const latest = pickLatest(readings);
 
   return (
     <div className="space-y-8">
@@ -59,11 +58,8 @@ export function LiveTelemetryPanel({ events, loading, error, onRefresh }: Props)
             Painel ao vivo
           </h1>
           <p className="mt-2 max-w-xl text-violet-200/75">
-            Dados mais recentes vindos do backend{" "}
-            <code className="rounded-md bg-white/5 px-1.5 py-0.5 text-sm text-violet-200">
-              GET /telemetry/events
-            </code>
-            .
+            Acompanhe temperatura e umidade com atualização automática a cada poucos
+            segundos.
           </p>
         </div>
         <button
@@ -80,10 +76,8 @@ export function LiveTelemetryPanel({ events, loading, error, onRefresh }: Props)
         <GlassCard glow="fuchsia" className="border-red-500/30 bg-red-950/20">
           <p className="text-sm text-red-200">{error}</p>
           <p className="mt-2 text-xs text-violet-300/60">
-            Confira se o backend está em{" "}
-            <span className="font-mono text-violet-200">{API_BASE}</span> e se{" "}
-            <code className="rounded bg-white/10 px-1">VITE_API_URL</code> está
-            correto no frontend.
+            Verifique sua conexão e tente novamente. Se o problema continuar,
+            entre em contato com o suporte.
           </p>
         </GlassCard>
       )}
@@ -92,8 +86,8 @@ export function LiveTelemetryPanel({ events, loading, error, onRefresh }: Props)
         <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-fuchsia-500/20 blur-2xl" />
         {!latest && !loading && !error ? (
           <p className="text-violet-200/80">
-            Nenhum evento de telemetria ainda. Quando o dispositivo publicar
-            dados, eles aparecerão aqui.
+            Ainda não há leituras disponíveis. Os valores aparecerão aqui assim
+            que o dispositivo estiver enviando dados.
           </p>
         ) : latest ? (
           <div className="relative grid gap-8 sm:grid-cols-2">
@@ -104,7 +98,7 @@ export function LiveTelemetryPanel({ events, loading, error, onRefresh }: Props)
                   ? latest.temperature.toFixed(1)
                   : "—"
               }
-              unit={latest.unit ? `°${latest.unit}` : "°C"}
+              unit="°C"
               accent="temp"
             />
             <Metric
@@ -123,8 +117,8 @@ export function LiveTelemetryPanel({ events, loading, error, onRefresh }: Props)
                 </code>
               </span>
               <span>
-                <strong className="text-violet-100">Recebido:</strong>{" "}
-                {formatTime(latest.receivedAt)}
+                <strong className="text-violet-100">Horário:</strong>{" "}
+                {formatTime(latest.recordedAt)}
               </span>
             </div>
           </div>
