@@ -16,6 +16,8 @@ CompileFlags:
     - .pio/libdeps/esp32doit-devkit-v1/PubSubClient/src
     - -I
     - .pio/libdeps/esp32doit-devkit-v1/DHT sensor library for ESPx
+    - -I
+    - .pio/libdeps/esp32doit-devkit-v1/U8g2/src
   Remove:
     - -mfix-esp32-psram-cache-issue
     - -mfix-esp32-psram-cache-strategy=memw
