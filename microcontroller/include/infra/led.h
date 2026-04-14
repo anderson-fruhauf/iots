@@ -6,3 +6,5 @@ void ledInit();
 void ledOn();
 
 void ledOff();
+
+void ledToggle();

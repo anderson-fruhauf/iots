@@ -15,3 +15,7 @@ void ledOn() {
 void ledOff() {
   digitalWrite(LED_PIN, LOW);
 }
+
+void ledToggle() {
+  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+}

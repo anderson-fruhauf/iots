@@ -49,9 +49,5 @@ void telemetryPublish(const TelemetryData& data) {
       data.temperature,
       data.humidity);
 
-  if (mqttPublish(s_telemetryTopic, payload, false)) {
-    Serial.printf("Publicado: %s\n", payload);
-  } else {
-    Serial.println("Falha ao publicar.");
-  }
+  mqttPublish(s_telemetryTopic, payload, false);
 }

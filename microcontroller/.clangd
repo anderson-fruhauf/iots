@@ -7,12 +7,10 @@
 CompileFlags:
   CompilationDatabase: .
   BuiltinHeaders: QueryDriver
-  # -I e caminho separados; caminhos com "~" entre aspas (YAML 1.1: ~ sozinho = null).
+  # Framework em ~/.platformio: usar ${HOME} — '~' literal não é expandido pelo clangd.
   Add:
-    - -I
-    - '~/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src'
-    - -I
-    - '~/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src'
+    - -I${HOME}/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src
+    - -I${HOME}/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src
     - -I
     - .pio/libdeps/esp32doit-devkit-v1/PubSubClient/src
     - -I
