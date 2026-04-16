@@ -15,16 +15,18 @@
 #endif
 
 #include "device/device_id.h"
+#include "infra/lamp.h"
 #include "infra/led.h"
 #include "infra/mqtt.h"
 #include "infra/screen.h"
 #include "infra/wifi.h"
 #include "services/activity_signal.h"
 #include "services/display_sensor.h"
+#include "services/lamp_command.h"
 #include "services/telemetry.h"
 
-static char deviceId[20];
-static char telemetryTopic[72];
+static char s_deviceId[20];
+static char s_telemetryTopic[72];
 static Ticker timerTelemetry;
 static Ticker timerScreen;
 
@@ -38,25 +40,37 @@ void setup() {
   Serial.begin(115200);
   delay(200);
   ledInit();
+  lampInit();
   screenInit();
 
   wifiStaMode();
-  deviceIdFromMac(deviceId, sizeof(deviceId));
+  deviceIdFromMac(s_deviceId, sizeof(s_deviceId));
   mqttBuildTelemetryTopic(
-      telemetryTopic,
-      sizeof(telemetryTopic),
+      s_telemetryTopic,
+      sizeof(s_telemetryTopic),
       MQTT_TOPIC_PREFIX,
-      deviceId);
+      s_deviceId);
+  char stateTopic[72];
+  mqttBuildStateTopic(
+      stateTopic,
+      sizeof(stateTopic),
+      MQTT_TOPIC_PREFIX,
+      s_deviceId);
+  lampCommandInit(s_deviceId, stateTopic);
 
-  telemetryInit(deviceId, telemetryTopic);
-  Serial.printf("Device ID: %s\n", deviceId);
-  Serial.printf("Tópico: %s\n", telemetryTopic);
+  telemetryInit(s_deviceId, s_telemetryTopic);
+  Serial.printf("Device ID: %s\n", s_deviceId);
+  Serial.printf("Tópico: %s\n", s_telemetryTopic);
   Serial.printf("Telemetria a cada %.0f s\n", TELEMETRY_INTERVAL_S);
 
   wifiSetup();
   mqttInitTransport();
   mqttApplyServer();
-  mqttReconnect(deviceId);
+  mqttSetCommandHandler(lampCommandOnMqttPayload);
+  mqttReconnect(s_deviceId);
+  if (mqttConnected()) {
+    lampCommandPublishCurrentState();
+  }
 
   activeSignal(telemetryTask)();
   tickScreen();
@@ -70,11 +84,12 @@ void loop() {
   }
 
   if (!mqttConnected()) {
-    mqttReconnect(deviceId);
+    mqttReconnect(s_deviceId);
     delay(500);
     return;
   }
   mqttLoop();
 
-  delay(100);
+  /* loop() do PubSubClient deve rodar com pouca latência para processar PUBLISH. */
+  delay(25);
 }

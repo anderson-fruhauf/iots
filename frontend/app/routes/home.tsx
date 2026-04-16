@@ -7,7 +7,8 @@ export function meta({}: Route.MetaArgs) {
     { title: "IOTS — Ao vivo" },
     {
       name: "description",
-      content: "Monitoramento ao vivo de temperatura e umidade dos dispositivos.",
+      content:
+        "Monitoramento ao vivo de temperatura, umidade e controle de dispositivos.",
     },
   ];
 }

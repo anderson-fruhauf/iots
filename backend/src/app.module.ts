@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
+import { DevicesModule } from './devices/devices.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
 import { typeOrmOptions } from './typeorm.config';
 
@@ -11,6 +12,7 @@ import { typeOrmOptions } from './typeorm.config';
       synchronize: process.env.DATABASE_SYNC === 'true',
     }),
     TelemetryModule,
+    DevicesModule,
   ],
   controllers: [AppController],
   providers: [],

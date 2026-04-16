@@ -9,6 +9,29 @@ void mqttBuildTelemetryTopic(
     const char* topicPrefix,
     const char* deviceId);
 
+void mqttBuildCommandTopic(
+    char* out,
+    size_t outLen,
+    const char* topicPrefix,
+    const char* deviceId);
+
+void mqttBuildStateTopic(
+    char* out,
+    size_t outLen,
+    const char* topicPrefix,
+    const char* deviceId);
+
+/**
+ * Callback ao receber payload em `{prefix}/{deviceId}/command`.
+ * `payload` é terminado em '\\0' (uso interno; não retido entre chamadas).
+ */
+void mqttSetCommandHandler(void (*handler)(const char* payload));
+
+void mqttPublishLampState(
+    const char* stateTopic,
+    const char* deviceId,
+    bool lampOn);
+
 /** TLS / buffer / timeout do cliente (chamar antes de apply/reconnect). */
 void mqttInitTransport();
 

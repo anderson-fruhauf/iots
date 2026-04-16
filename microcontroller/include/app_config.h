@@ -4,6 +4,8 @@
 
 // Pinos
 static constexpr int LED_PIN = 2;
+/** Lâmpada / carga (ex.: relé) — GPIO 19. */
+static constexpr int LAMP_PIN = 19;
 static constexpr int DHT_PIN = 23;
 
 // OLED 0,96" 128x64 I2C (SSD1306)

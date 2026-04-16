@@ -32,6 +32,55 @@ void mqttBuildTelemetryTopic(
   snprintf(out, outLen, "%s/%s/telemetry", topicPrefix, deviceId);
 }
 
+void mqttBuildCommandTopic(
+    char* out,
+    size_t outLen,
+    const char* topicPrefix,
+    const char* deviceId) {
+  snprintf(out, outLen, "%s/%s/command", topicPrefix, deviceId);
+}
+
+void mqttBuildStateTopic(
+    char* out,
+    size_t outLen,
+    const char* topicPrefix,
+    const char* deviceId) {
+  snprintf(out, outLen, "%s/%s/state", topicPrefix, deviceId);
+}
+
+static void (*s_commandHandler)(const char* payload) = nullptr;
+
+static void mqttInternalCallback(char* topic, byte* payload, unsigned int length) {
+  static char buf[512];
+  size_t n = length < sizeof(buf) - 1 ? length : sizeof(buf) - 1;
+  memcpy(buf, payload, n);
+  buf[n] = '\0';
+  Serial.printf("MQTT RX topic=%s len=%u\n", topic, (unsigned)length);
+  if (s_commandHandler) {
+    s_commandHandler(buf);
+  } else {
+    Serial.println("MQTT: handler de comando nao registrado.");
+  }
+}
+
+void mqttSetCommandHandler(void (*handler)(const char* payload)) {
+  s_commandHandler = handler;
+}
+
+void mqttPublishLampState(
+    const char* stateTopic,
+    const char* deviceId,
+    bool lampOn) {
+  char payload[96];
+  snprintf(
+      payload,
+      sizeof(payload),
+      "{\"deviceId\":\"%s\",\"lamp\":%s}",
+      deviceId,
+      lampOn ? "true" : "false");
+  mqttPublish(stateTopic, payload, true);
+}
+
 void mqttApplyServer() {
   if (WiFi.status() != WL_CONNECTED) {
     return;
@@ -56,8 +105,11 @@ void mqttInitTransport() {
   mqttTransport.setInsecure();
   mqttTransport.setHandshakeTimeout(30);
 #endif
-  s_mqtt.setBufferSize(256);
+  /* Pacote MQTT (topo + payload) maior que o default 256; evita descartar PUBLISH. */
+  s_mqtt.setBufferSize(512);
   s_mqtt.setSocketTimeout(15);
+  s_mqtt.setKeepAlive(60);
+  s_mqtt.setCallback(mqttInternalCallback);
 }
 
 void mqttReconnect(const char* deviceId) {
@@ -73,6 +125,18 @@ void mqttReconnect(const char* deviceId) {
   if (s_mqtt.connect(clientId)) {
     lastMqttFailLogMs = 0;
     Serial.println("MQTT conectado.");
+    char commandTopic[72];
+    mqttBuildCommandTopic(
+        commandTopic,
+        sizeof(commandTopic),
+        MQTT_TOPIC_PREFIX,
+        deviceId);
+    /* QoS 1: alguns brokers entregam de forma mais confiável que QoS 0. */
+    if (s_mqtt.subscribe(commandTopic, 1)) {
+      Serial.printf("MQTT inscrito (QoS1): %s\n", commandTopic);
+    } else {
+      Serial.println("MQTT subscribe falhou.");
+    }
     Serial.flush();
   } else {
     uint32_t now = millis();

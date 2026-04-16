@@ -1,5 +1,25 @@
+import { LampControl } from "~/components/telemetry/LampControl";
 import { GlassCard } from "~/components/ui/GlassCard";
 import { pickLatest, type TelemetryReading } from "~/lib/telemetry";
+
+function lampLabel(index: number, total: number): string {
+  if (total <= 1) {
+    return "Lâmpada principal";
+  }
+  return index === 0 ? "Lâmpada principal" : `Lâmpada ${index + 1}`;
+}
+
+function uniqueDeviceIds(readings: TelemetryReading[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const r of readings) {
+    if (!seen.has(r.deviceId)) {
+      seen.add(r.deviceId);
+      out.push(r.deviceId);
+    }
+  }
+  return out;
+}
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -49,6 +69,7 @@ type Props = {
 
 export function LiveTelemetryPanel({ readings, loading, error, onRefresh }: Props) {
   const latest = pickLatest(readings);
+  const deviceIdsForLamp = uniqueDeviceIds(readings);
 
   return (
     <div className="space-y-8">
@@ -58,8 +79,8 @@ export function LiveTelemetryPanel({ readings, loading, error, onRefresh }: Prop
             Painel ao vivo
           </h1>
           <p className="mt-2 max-w-xl text-violet-200/75">
-            Acompanhe temperatura e umidade com atualização automática a cada poucos
-            segundos.
+            Acompanhe temperatura, umidade e o controle dos dispositivos, com
+            atualização periódica.
           </p>
         </div>
         <button
@@ -126,6 +147,23 @@ export function LiveTelemetryPanel({ readings, loading, error, onRefresh }: Prop
           <p className="text-violet-200/70">Carregando leitura mais recente…</p>
         )}
       </GlassCard>
+
+      {deviceIdsForLamp.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="font-display text-xl font-semibold text-white">
+            Controle de dispositivos
+          </h2>
+          <div className="flex flex-wrap gap-4">
+            {deviceIdsForLamp.map((id, index) => (
+              <LampControl
+                key={id}
+                deviceId={id}
+                label={lampLabel(index, deviceIdsForLamp.length)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

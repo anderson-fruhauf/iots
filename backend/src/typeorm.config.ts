@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { DataSource, type DataSourceOptions } from 'typeorm';
 import { join } from 'path';
+import { DeviceState } from './devices/device-state.entity';
 import { TelemetryReading } from './telemetry/telemetry-reading.entity';
 
 export const typeOrmOptions: DataSourceOptions = {
@@ -8,7 +9,7 @@ export const typeOrmOptions: DataSourceOptions = {
   url: process.env.DATABASE_URL,
   ssl:
     process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
-  entities: [TelemetryReading],
+  entities: [TelemetryReading, DeviceState],
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
   migrationsTableName: 'typeorm_migrations',
   synchronize: false,
