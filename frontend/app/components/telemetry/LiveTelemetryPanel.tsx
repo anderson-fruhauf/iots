@@ -1,24 +1,16 @@
 import { LampControl } from "~/components/telemetry/LampControl";
 import { GlassCard } from "~/components/ui/GlassCard";
-import { pickLatest, type TelemetryReading } from "~/lib/telemetry";
+import {
+  pickLatest,
+  uniqueDeviceIds,
+  type TelemetryReading,
+} from "~/lib/telemetry";
 
 function lampLabel(index: number, total: number): string {
   if (total <= 1) {
     return "Lâmpada principal";
   }
   return index === 0 ? "Lâmpada principal" : `Lâmpada ${index + 1}`;
-}
-
-function uniqueDeviceIds(readings: TelemetryReading[]): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const r of readings) {
-    if (!seen.has(r.deviceId)) {
-      seen.add(r.deviceId);
-      out.push(r.deviceId);
-    }
-  }
-  return out;
 }
 
 function formatTime(iso: string) {
@@ -87,7 +79,7 @@ export function LiveTelemetryPanel({ readings, loading, error, onRefresh }: Prop
           type="button"
           onClick={onRefresh}
           disabled={loading}
-          className="inline-flex items-center justify-center rounded-xl border border-violet-500/40 bg-violet-600/20 px-5 py-2.5 text-sm font-semibold text-violet-100 shadow-[0_0_28px_-8px_rgba(139,92,246,0.6)] transition hover:bg-violet-500/30 disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-xl border border-violet-500/40 bg-violet-600/20 px-5 py-2.5 text-sm font-semibold text-violet-100 shadow-[0_0_18px_-6px_rgba(139,92,246,0.3)] transition hover:bg-violet-500/30 disabled:opacity-60"
         >
           {loading ? "Atualizando…" : "Atualizar agora"}
         </button>

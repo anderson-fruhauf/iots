@@ -7,8 +7,8 @@ type Props = {
 };
 
 const glowClass = {
-  violet: "shadow-[0_0_60px_-12px_rgba(168,85,247,0.45)]",
-  fuchsia: "shadow-[0_0_60px_-12px_rgba(217,70,239,0.4)]",
+  violet: "shadow-[0_0_36px_-8px_rgba(168,85,247,0.2)]",
+  fuchsia: "shadow-[0_0_36px_-8px_rgba(217,70,239,0.18)]",
   none: "",
 } as const;
 

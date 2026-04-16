@@ -8,16 +8,37 @@ export type TelemetryReading = {
   recordedAt: string;
 };
 
+export type FetchTelemetryOptions = {
+  deviceId?: string;
+};
+
 export async function fetchTelemetryReadings(
   limit = 50,
+  options?: FetchTelemetryOptions,
 ): Promise<TelemetryReading[]> {
   const url = new URL(`${API_BASE}/telemetry/readings`);
   url.searchParams.set("limit", String(Math.min(Math.max(limit, 1), 200)));
+  if (options?.deviceId) {
+    url.searchParams.set("deviceId", options.deviceId);
+  }
   const res = await fetch(url.toString());
   if (!res.ok) {
     throw new Error("Não foi possível carregar os dados no momento.");
   }
   return (await res.json()) as TelemetryReading[];
+}
+
+/** IDs distintos preservando a ordem de primeira aparição. */
+export function uniqueDeviceIds(readings: TelemetryReading[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const r of readings) {
+    if (!seen.has(r.deviceId)) {
+      seen.add(r.deviceId);
+      out.push(r.deviceId);
+    }
+  }
+  return out;
 }
 
 /** Primeiro item da lista (ordenada da mais recente para a mais antiga). */

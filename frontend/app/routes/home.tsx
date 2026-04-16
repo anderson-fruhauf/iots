@@ -1,29 +1,28 @@
 import type { Route } from "./+types/home";
-import { LiveTelemetryPanel } from "~/components/telemetry/LiveTelemetryPanel";
+import { DeviceHomeList } from "~/components/home/DeviceHomeList";
 import { useTelemetryReadings } from "~/lib/hooks/useTelemetryReadings";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "IOTS — Ao vivo" },
+    { title: "IOTS — Dispositivos" },
     {
       name: "description",
       content:
-        "Monitoramento ao vivo de temperatura, umidade e controle de dispositivos.",
+        "Lista de dispositivos: lâmpada e sensor, com controle e telemetria.",
     },
   ];
 }
 
 export default function Home() {
-  const { data, error, loading, refresh } = useTelemetryReadings(1, {
+  const { data, error, loading } = useTelemetryReadings(200, {
     refetchIntervalMs: 15_000,
   });
 
   return (
-    <LiveTelemetryPanel
+    <DeviceHomeList
       readings={data ?? []}
       loading={loading}
       error={error}
-      onRefresh={refresh}
     />
   );
 }

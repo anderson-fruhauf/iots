@@ -8,6 +8,6 @@ import {
 export default [
   layout("routes/_layout.tsx", [
     index("routes/home.tsx"),
-    route("historico", "routes/historico.tsx"),
+    route("sensor/:deviceId", "routes/sensor.$deviceId.tsx"),
   ]),
 ] satisfies RouteConfig;

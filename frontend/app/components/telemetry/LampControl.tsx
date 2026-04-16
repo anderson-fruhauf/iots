@@ -11,7 +11,7 @@ function LampIcon({ on }: { on: boolean }) {
   if (on) {
     return (
       <span
-        className="relative flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-amber-400/25 text-amber-200 shadow-[0_0_32px_-6px_rgba(251,191,36,0.7)] ring-1 ring-amber-300/40"
+        className="relative flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-amber-400/25 text-amber-200 shadow-[0_0_20px_-4px_rgba(251,191,36,0.38)] ring-1 ring-amber-300/40"
         aria-hidden
       >
         <svg

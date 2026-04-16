@@ -7,6 +7,8 @@ import {
 type Options = {
   /** Intervalo de atualização automática em ms (omitir para só carregar uma vez). */
   refetchIntervalMs?: number;
+  /** Filtra leituras por dispositivo (mesmo valor salvo na telemetria). */
+  deviceId?: string;
 };
 
 export function useTelemetryReadings(limit: number, options?: Options) {
@@ -17,7 +19,9 @@ export function useTelemetryReadings(limit: number, options?: Options) {
   const refresh = useCallback(async () => {
     try {
       setError(null);
-      const rows = await fetchTelemetryReadings(limit);
+      const rows = await fetchTelemetryReadings(limit, {
+        deviceId: options?.deviceId,
+      });
       setData(rows);
     } catch (e) {
       setError(
@@ -28,7 +32,7 @@ export function useTelemetryReadings(limit: number, options?: Options) {
     } finally {
       setLoading(false);
     }
-  }, [limit]);
+  }, [limit, options?.deviceId]);
 
   useEffect(() => {
     void refresh();

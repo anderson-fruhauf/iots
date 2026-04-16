@@ -5,7 +5,7 @@ const linkBase =
 const linkInactive =
   "text-violet-200/70 hover:bg-white/5 hover:text-violet-100";
 const linkActive =
-  "bg-gradient-to-r from-violet-600/40 to-fuchsia-600/30 text-white shadow-[0_0_24px_-4px_rgba(168,85,247,0.5)]";
+  "bg-gradient-to-r from-violet-600/40 to-fuchsia-600/30 text-white shadow-[0_0_14px_-4px_rgba(168,85,247,0.26)]";
 
 export function AppShell() {
   return (
@@ -14,8 +14,8 @@ export function AppShell() {
         className="pointer-events-none fixed inset-0 opacity-90"
         aria-hidden
       >
-        <div className="absolute -left-1/4 top-0 h-[520px] w-[520px] rounded-full bg-violet-600/25 blur-[120px]" />
-        <div className="absolute -right-1/4 bottom-0 h-[480px] w-[480px] rounded-full bg-fuchsia-600/20 blur-[110px]" />
+        <div className="absolute -left-1/4 top-0 h-[520px] w-[520px] rounded-full bg-violet-600/14 blur-[120px]" />
+        <div className="absolute -right-1/4 bottom-0 h-[480px] w-[480px] rounded-full bg-fuchsia-600/11 blur-[110px]" />
         <div className="absolute left-1/2 top-1/3 h-px w-[min(100%,80rem)] -translate-x-1/2 bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
       </div>
 
@@ -23,7 +23,7 @@ export function AppShell() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-lg font-bold text-white shadow-lg shadow-violet-500/40"
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-lg font-bold text-white shadow-md shadow-violet-500/22"
               aria-hidden
             >
               Io
@@ -45,15 +45,7 @@ export function AppShell() {
                 [linkBase, isActive ? linkActive : linkInactive].join(" ")
               }
             >
-              Ao vivo
-            </NavLink>
-            <NavLink
-              to="/historico"
-              className={({ isActive }) =>
-                [linkBase, isActive ? linkActive : linkInactive].join(" ")
-              }
-            >
-              Histórico
+              Dispositivos
             </NavLink>
           </nav>
         </div>

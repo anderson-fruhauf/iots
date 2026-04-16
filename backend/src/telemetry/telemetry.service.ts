@@ -36,10 +36,12 @@ export class TelemetryService {
     return saved;
   }
 
-  findRecent(limit = 50): Promise<TelemetryReading[]> {
+  findRecent(limit = 50, deviceId?: string): Promise<TelemetryReading[]> {
+    const take = Math.min(limit, 200);
     return this.repo.find({
+      where: deviceId ? { deviceId } : {},
       order: { recordedAt: 'DESC' },
-      take: Math.min(limit, 200),
+      take,
     });
   }
 
