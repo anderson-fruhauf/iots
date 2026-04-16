@@ -12,7 +12,10 @@ export class TelemetryService {
     private readonly repo: Repository<TelemetryReading>,
   ) {}
 
-  async ingestFromMqtt(topic: string, data: unknown): Promise<TelemetryReading> {
+  async ingestFromMqtt(
+    topic: string,
+    data: unknown,
+  ): Promise<TelemetryReading> {
     const payload = this.normalizePayload(data);
     const deviceId =
       (typeof payload.deviceId === 'string' && payload.deviceId) ||
@@ -52,7 +55,9 @@ export class TelemetryService {
     if (typeof data === 'string') {
       try {
         const parsed = JSON.parse(data) as unknown;
-        return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+        return typeof parsed === 'object' &&
+          parsed !== null &&
+          !Array.isArray(parsed)
           ? (parsed as Record<string, unknown>)
           : { raw: parsed };
       } catch {
