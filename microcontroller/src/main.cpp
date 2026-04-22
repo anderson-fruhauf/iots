@@ -25,6 +25,8 @@
 #include "services/lamp_command.h"
 #include "services/telemetry.h"
 #include "services/soil_report.h"
+#include "services/watering.h"
+#include "infra/relay.h"
 #include "infra/soil_moisture.h"
 
 static char s_deviceId[20];
@@ -32,6 +34,7 @@ static char s_telemetryTopic[72];
 static char s_soilTopic[72];
 static Ticker timerHourly;
 static Ticker timerScreen;
+static Ticker timerIrrigation;
 
 static void hourlyIot() {
   activeSignal(telemetryTask)();
@@ -51,7 +54,7 @@ void setup() {
   lampInit();
   screenInit();
   setupSoilMoisture();
-  
+  setupRelay();
 
   wifiStaMode();
   deviceIdFromMac(s_deviceId, sizeof(s_deviceId));
@@ -93,9 +96,13 @@ void setup() {
   tickScreen();
   timerHourly.attach(TELEMETRY_INTERVAL_S, hourlyIot);
   timerScreen.attach(SCREEN_REFRESH_INTERVAL_S, tickScreen);
+  irrigationInit();
+  timerIrrigation.attach(SOIL_IRRIGATION_CHECK_INTERVAL_S, irrigationOnMinuteTick);
 }
 
 void loop() {
+  irrigationService();
+
   if (WiFi.status() != WL_CONNECTED) {
     wifiSetup();
   }

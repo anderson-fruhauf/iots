@@ -4,11 +4,17 @@
 #include "infra/soil_moisture.h"
 
 void setupSoilMoisture() {
+  pinMode(SOIL_MOISTURE_POWER_PIN, OUTPUT);
+  digitalWrite(SOIL_MOISTURE_POWER_PIN, LOW);
   pinMode(SOIL_MOISTURE_SENSOR_PIN, INPUT);
 }
 
 int readSoilMoisture() {
-  return analogRead(SOIL_MOISTURE_SENSOR_PIN);
+  digitalWrite(SOIL_MOISTURE_POWER_PIN, HIGH);
+  delay(SOIL_POWER_SETTLE_MS);
+  const int v = analogRead(SOIL_MOISTURE_SENSOR_PIN);
+  digitalWrite(SOIL_MOISTURE_POWER_PIN, LOW);
+  return v;
 }
 
 int soilWetnessPercentFromRaw(int raw) {

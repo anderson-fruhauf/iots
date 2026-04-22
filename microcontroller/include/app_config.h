@@ -9,12 +9,24 @@ static constexpr int LAMP_PIN = 19;
 static constexpr int DHT_PIN = 23;
 
 // sensor de umidade do solo (ADC: seco ~ alto, húmido ~ baixo)
+static constexpr int SOIL_MOISTURE_POWER_PIN = 15;
 static constexpr int SOIL_MOISTURE_SENSOR_PIN = 33;
+static constexpr uint32_t SOIL_POWER_SETTLE_MS = 50;
 static constexpr int SOIL_ADC_MAX = 4095;
 static constexpr int SOIL_DRY_THRESHOLD_RAW =
     2000;  // >= este valor: considera seco (regue); calibra
 
-// relay
+// irrigação local (histerese em % de humidade do solo, 0=seco 100=húmido)
+static constexpr int SOIL_IRRIGATE_ON_BELOW_PCT = 70;
+static constexpr int SOIL_IRRIGATE_OFF_ABOVE_PCT = 80;
+static constexpr float SOIL_IRRIGATION_CHECK_INTERVAL_S = 30.0f;
+/** Com irrigação ativa, reavalia o solo a cada 1 s até atingir o alvo. */
+static constexpr uint32_t SOIL_IRRIGATION_STEP_MS = 1000U;
+/** Corta o relé se a irrigação exceder este tempo (falha de leitura / gotejamento muito lento). */
+static constexpr uint32_t SOIL_IRRIGATION_MAX_ON_MS = 10U * 60U * 1000U;
+
+// relay — muitos módulos acionam com IN em LOW (fotoacoplador)
+static constexpr bool RELAY_ACTIVE_LOW = true;
 static constexpr int RELAY_PIN = 4;
 
 // OLED 0,96" 128x64 I2C (SSD1306)
@@ -32,7 +44,7 @@ static constexpr uint32_t MQTT_FAIL_LOG_INTERVAL_MS = 5000;
 /**
  * Intervalo entre envios (segundos) — telemetria e solo (mesmo Ticker em main).
  */
-static constexpr float TELEMETRY_INTERVAL_S = 3600;
+static constexpr float TELEMETRY_INTERVAL_S = 30;
 
 /** Período para `Ticker::attach(segundos, ...)` — redes + sensor e um único redesenho OLED. */
 static constexpr float SCREEN_REFRESH_INTERVAL_S = 10.0f;

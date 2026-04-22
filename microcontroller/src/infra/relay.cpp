@@ -18,7 +18,7 @@ void setupRelay() {
     return;
   }
   pinMode(pin, OUTPUT);
-  digitalWrite(pin, LOW);
+  setRelay(RelayChannel::Ch1, false);
 }
 
 void setRelay(RelayChannel channel, bool on) {
@@ -26,5 +26,6 @@ void setRelay(RelayChannel channel, bool on) {
   if (pin < 0) {
     return;
   }
-  digitalWrite(pin, on ? HIGH : LOW);
+  const bool levelHigh = RELAY_ACTIVE_LOW ? !on : on;
+  digitalWrite(pin, levelHigh ? HIGH : LOW);
 }
