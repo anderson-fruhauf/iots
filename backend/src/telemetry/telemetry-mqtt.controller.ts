@@ -1,12 +1,13 @@
 import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, MqttContext, Payload } from '@nestjs/microservices';
+import { MQTT_PATTERN_DEVICE_TELEMETRY } from '../mqtt/mqtt.constants';
 import { TelemetryService } from './telemetry.service';
 
 @Controller()
 export class TelemetryMqttController {
   constructor(private readonly telemetryService: TelemetryService) {}
 
-  @EventPattern('iots/device/+/telemetry')
+  @EventPattern(MQTT_PATTERN_DEVICE_TELEMETRY)
   async handleTelemetry(
     @Payload() data: unknown,
     @Ctx() context: MqttContext,

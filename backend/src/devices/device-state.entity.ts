@@ -1,8 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-/**
- * Estado por dispositivo e canal (ex.: `lamp`, `fan`), permitindo vários por `device_id`.
- */
 @Entity({ name: 'device_states' })
 export class DeviceState {
   @PrimaryColumn({ name: 'device_id', type: 'varchar', length: 32 })

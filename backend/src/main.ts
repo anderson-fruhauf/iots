@@ -1,8 +1,9 @@
 import 'dotenv/config';
 
 import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { AppModule } from './app.module';
+import { mqttMicroserviceOptions } from './mqtt/mqtt-broker.config';
 
 async function bootstrap() {
   console.log('iniciando backend');
@@ -18,13 +19,7 @@ async function bootstrap() {
     origin: process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()) ?? true,
     credentials: true,
   });
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.MQTT,
-    options: {
-      url: process.env.MQTT_URL ?? 'mqtt://127.0.0.1:1883',
-      subscribeOptions: { qos: 0 },
-    },
-  });
+  app.connectMicroservice<MicroserviceOptions>(mqttMicroserviceOptions());
   await app.startAllMicroservices();
   await app.listen(port, '0.0.0.0');
 }

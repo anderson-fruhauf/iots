@@ -1,40 +1,24 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import mqtt from 'mqtt';
 import { Repository } from 'typeorm';
+import {
+  deviceCommandTopic,
+  extractDeviceIdFromDeviceTopic,
+} from '../mqtt/mqtt.constants';
+import { MqttPublisherService } from '../mqtt/mqtt-publisher.service';
 import { DeviceState } from './device-state.entity';
 
-/** Canal MQTT/JSON para a iluminação — outros canais podem ser adicionados no futuro. */
 export const LAMP_CHANNEL = 'lamp';
 
 @Injectable()
-export class DeviceStateService implements OnModuleInit, OnModuleDestroy {
+export class DeviceStateService {
   private readonly logger = new Logger(DeviceStateService.name);
-  private mqttPub: mqtt.MqttClient | null = null;
 
   constructor(
     @InjectRepository(DeviceState)
     private readonly stateRepo: Repository<DeviceState>,
+    private readonly mqttPublisher: MqttPublisherService,
   ) {}
-
-  onModuleInit(): void {
-    const url = process.env.MQTT_URL ?? 'mqtt://127.0.0.1:1883';
-    this.mqttPub = mqtt.connect(url);
-    this.mqttPub.on('error', (err) => {
-      this.logger.warn(`MQTT (publish): ${err.message}`);
-    });
-  }
-
-  onModuleDestroy(): void {
-    this.mqttPub?.end(true);
-    this.mqttPub = null;
-  }
 
   async getLampState(
     deviceId: string,
@@ -50,7 +34,7 @@ export class DeviceStateService implements OnModuleInit, OnModuleDestroy {
   }
 
   async ingestLampState(topic: string, data: unknown): Promise<void> {
-    const rawId = this.extractDeviceIdFromStateTopic(topic);
+    const rawId = extractDeviceIdFromDeviceTopic(topic, 'state');
     const deviceId = rawId ? this.normalizeDeviceId(rawId) : null;
     if (!deviceId) {
       this.logger.warn(`Estado sem deviceId (topic=${topic})`);
@@ -76,20 +60,16 @@ export class DeviceStateService implements OnModuleInit, OnModuleDestroy {
     if (!/^[A-F0-9]{12}$/.test(id)) {
       throw new BadRequestException('deviceId inválido.');
     }
-    if (!this.mqttPub) {
-      throw new BadRequestException('Cliente MQTT indisponível.');
-    }
-    const topic = `iots/device/${id}/command`;
-    const payload = JSON.stringify({ lamp: on });
-    await new Promise<void>((resolve, reject) => {
-      this.mqttPub!.publish(topic, payload, { qos: 0 }, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
+    try {
+      await this.mqttPublisher.publishJson(deviceCommandTopic(id), {
+        lamp: on,
       });
-    });
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('indisponível')) {
+        throw new BadRequestException('Cliente MQTT indisponível.');
+      }
+      throw e;
+    }
     await this.stateRepo.save({
       deviceId: id,
       channel: LAMP_CHANNEL,
@@ -99,7 +79,6 @@ export class DeviceStateService implements OnModuleInit, OnModuleDestroy {
     this.logger.debug(`Comando ${LAMP_CHANNEL} ${id}: ${on}`);
   }
 
-  /** Alinha com o firmware (MAC em hex maiúsculo nos tópicos MQTT). */
   private normalizeDeviceId(deviceId: string): string {
     return deviceId.trim().toUpperCase();
   }
@@ -111,7 +90,9 @@ export class DeviceStateService implements OnModuleInit, OnModuleDestroy {
     if (typeof data === 'string') {
       try {
         const parsed = JSON.parse(data) as unknown;
-        return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+        return typeof parsed === 'object' &&
+          parsed !== null &&
+          !Array.isArray(parsed)
           ? (parsed as Record<string, unknown>)
           : { raw: parsed };
       } catch {
@@ -122,18 +103,5 @@ export class DeviceStateService implements OnModuleInit, OnModuleDestroy {
       return data as Record<string, unknown>;
     }
     return { value: data };
-  }
-
-  private extractDeviceIdFromStateTopic(topic: string): string | null {
-    const parts = topic.split('/');
-    if (
-      parts.length >= 4 &&
-      parts[0] === 'iots' &&
-      parts[1] === 'device' &&
-      parts[3] === 'state'
-    ) {
-      return parts[2] ?? null;
-    }
-    return null;
   }
 }

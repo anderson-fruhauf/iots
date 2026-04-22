@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { extractDeviceIdFromDeviceTopic } from '../mqtt/mqtt.constants';
 import { TelemetryReading } from './telemetry-reading.entity';
 
 @Injectable()
@@ -17,9 +18,12 @@ export class TelemetryService {
     data: unknown,
   ): Promise<TelemetryReading> {
     const payload = this.normalizePayload(data);
-    const deviceId =
-      (typeof payload.deviceId === 'string' && payload.deviceId) ||
-      this.extractDeviceIdFromTopic(topic);
+    const fromTopic = extractDeviceIdFromDeviceTopic(topic, 'telemetry');
+    const fromPayload =
+      typeof payload.deviceId === 'string' && payload.deviceId.length > 0
+        ? payload.deviceId
+        : null;
+    const deviceId = fromPayload ?? fromTopic;
     if (!deviceId) {
       this.logger.warn(`Telemetria sem deviceId (topic=${topic})`);
     }
@@ -68,19 +72,6 @@ export class TelemetryService {
       return data as Record<string, unknown>;
     }
     return { value: data };
-  }
-
-  private extractDeviceIdFromTopic(topic: string): string | null {
-    const parts = topic.split('/');
-    if (
-      parts.length >= 4 &&
-      parts[0] === 'iots' &&
-      parts[1] === 'device' &&
-      parts[3] === 'telemetry'
-    ) {
-      return parts[2] ?? null;
-    }
-    return null;
   }
 
   private toNumber(value: unknown): number | null {
