@@ -2,24 +2,30 @@ import { Fragment } from "react";
 import { Link } from "react-router";
 import { GlassCard } from "~/components/ui/GlassCard";
 import { useLampState } from "~/lib/hooks/useLampState";
-import { uniqueDeviceIds, type TelemetryReading } from "~/lib/telemetry";
+import type { SoilState } from "~/lib/soil";
+import type { TelemetryReading } from "~/lib/telemetry";
 
 type Props = {
-  readings: TelemetryReading[];
+  deviceIds: string[];
+  soilRows: SoilState[];
   loading: boolean;
   error: string | null;
 };
 
 function labelForDevice(
-  kind: "lamp" | "sensor",
+  kind: "lamp" | "sensor" | "soil",
   index: number,
   total: number,
 ): string {
   if (total <= 1) {
-    return kind === "lamp" ? "Lâmpada" : "Sensor";
+    if (kind === "lamp") return "Lâmpada";
+    if (kind === "sensor") return "Sensor";
+    return "Solo";
   }
   const n = index + 1;
-  return kind === "lamp" ? `Lâmpada ${n}` : `Sensor ${n}`;
+  if (kind === "lamp") return `Lâmpada ${n}`;
+  if (kind === "sensor") return `Sensor ${n}`;
+  return `Solo ${n}`;
 }
 
 function LampDeviceCard({
@@ -172,12 +178,74 @@ function SensorDeviceCard({
   );
 }
 
+function SoilDeviceCard({
+  deviceId,
+  label,
+  row,
+}: {
+  deviceId: string;
+  label: string;
+  row: SoilState | undefined;
+}) {
+  const wet = row?.wetPercent;
+  return (
+    <Link
+      to={`/soil/${encodeURIComponent(deviceId)}`}
+      className="group min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
+      aria-label={`${label}: ver umidade do solo`}
+    >
+      <GlassCard
+        glow="fuchsia"
+        className="rounded-xl p-0! ring-0 transition group-hover:bg-white/[0.06]"
+      >
+        <span className="flex aspect-square w-full flex-col items-center justify-between gap-2 rounded-xl p-4 pb-5 text-center">
+          <span
+            className="flex min-h-0 flex-1 flex-col items-center justify-center pt-1 text-emerald-200/90"
+            aria-hidden
+          >
+            <span className="flex h-20 w-20 items-center justify-center rounded-xl bg-emerald-500/20 ring-1 ring-emerald-400/30">
+              <svg
+                className="h-11 w-11"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2c-2 3.5-6 6.5-6 11a6 6 0 1 0 12 0c0-4.5-4-7.5-6-11Z"
+                  fill="currentColor"
+                  opacity="0.9"
+                />
+                <path
+                  d="M8 15h8a4 4 0 0 1-8 0Z"
+                  fill="currentColor"
+                  opacity="0.5"
+                />
+              </svg>
+            </span>
+          </span>
+          <div className="flex w-full flex-col items-center gap-1">
+            <span className="font-display text-2xl font-bold tabular-nums text-emerald-100">
+              {wet != null ? `${wet}%` : "—"}
+            </span>
+            <span className="text-[11px] font-medium text-emerald-300/70">
+              Umidade do solo
+            </span>
+            <p className="line-clamp-2 font-display text-sm font-semibold leading-snug text-violet-100">
+              {label}
+            </p>
+          </div>
+        </span>
+      </GlassCard>
+    </Link>
+  );
+}
+
 export function DeviceHomeList({
-  readings,
+  deviceIds: ids,
+  soilRows,
   loading,
   error,
 }: Props) {
-  const ids = uniqueDeviceIds(readings);
 
   return (
     <div className="space-y-8">
@@ -186,8 +254,8 @@ export function DeviceHomeList({
           Dispositivos
         </h1>
         <p className="mt-2 max-w-xl text-violet-200/75">
-          Toque na lâmpada para alternar o estado. Abra o sensor para ver
-          leituras e histórico.
+          Lâmpada, sensores (ar) e umidade do solo. Toque em cada bloco para
+          detalhes ou ação.
         </p>
       </div>
 
@@ -201,7 +269,7 @@ export function DeviceHomeList({
         <GlassCard>
           <p className="text-violet-200/80">
             Nenhum dispositivo encontrado ainda. Quando o hardware enviar
-            telemetria, a lista aparecerá aqui automaticamente.
+            telemetria ou solo, a lista aparecerá aqui.
           </p>
         </GlassCard>
       )}
@@ -212,22 +280,34 @@ export function DeviceHomeList({
             className="flex flex-wrap justify-center gap-4"
             aria-label="Dispositivos"
           >
-            {ids.map((deviceId, index) => (
-              <Fragment key={deviceId}>
-                <li className="w-40 min-w-0 sm:w-44">
-                  <LampDeviceCard
-                    deviceId={deviceId}
-                    label={labelForDevice("lamp", index, ids.length)}
-                  />
-                </li>
-                <li className="w-40 min-w-0 sm:w-44">
-                  <SensorDeviceCard
-                    deviceId={deviceId}
-                    label={labelForDevice("sensor", index, ids.length)}
-                  />
-                </li>
-              </Fragment>
-            ))}
+            {ids.map((deviceId, index) => {
+              const soil = soilRows.find(
+                (r) => r.deviceId.toUpperCase() === deviceId.toUpperCase(),
+              );
+              return (
+                <Fragment key={deviceId}>
+                  <li className="w-40 min-w-0 sm:w-44">
+                    <LampDeviceCard
+                      deviceId={deviceId}
+                      label={labelForDevice("lamp", index, ids.length)}
+                    />
+                  </li>
+                  <li className="w-40 min-w-0 sm:w-44">
+                    <SensorDeviceCard
+                      deviceId={deviceId}
+                      label={labelForDevice("sensor", index, ids.length)}
+                    />
+                  </li>
+                  <li className="w-40 min-w-0 sm:w-44">
+                    <SoilDeviceCard
+                      deviceId={deviceId}
+                      label={labelForDevice("soil", index, ids.length)}
+                      row={soil}
+                    />
+                  </li>
+                </Fragment>
+              );
+            })}
           </ul>
         </div>
       )}

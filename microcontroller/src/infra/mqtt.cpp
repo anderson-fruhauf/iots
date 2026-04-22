@@ -49,6 +49,14 @@ void mqttBuildStateTopic(
   snprintf(out, outLen, "%s/%s/state", topicPrefix, deviceId);
 }
 
+void mqttBuildSoilTopic(
+    char* out,
+    size_t outLen,
+    const char* topicPrefix,
+    const char* deviceId) {
+  snprintf(out, outLen, "%s/%s/soil", topicPrefix, deviceId);
+}
+
 static void (*s_commandHandler)(const char* payload) = nullptr;
 
 static void mqttInternalCallback(char* topic, byte* payload, unsigned int length) {

@@ -24,11 +24,19 @@
 #include "services/display_sensor.h"
 #include "services/lamp_command.h"
 #include "services/telemetry.h"
+#include "services/soil_report.h"
+#include "infra/soil_moisture.h"
 
 static char s_deviceId[20];
 static char s_telemetryTopic[72];
-static Ticker timerTelemetry;
+static char s_soilTopic[72];
+static Ticker timerHourly;
 static Ticker timerScreen;
+
+static void hourlyIot() {
+  activeSignal(telemetryTask)();
+  activeSignal(soilReportTask)();
+}
 
 static void tickScreen() {
   screenSetNetwork(WiFi.status() == WL_CONNECTED, mqttConnected());
@@ -42,12 +50,19 @@ void setup() {
   ledInit();
   lampInit();
   screenInit();
+  setupSoilMoisture();
+  
 
   wifiStaMode();
   deviceIdFromMac(s_deviceId, sizeof(s_deviceId));
   mqttBuildTelemetryTopic(
       s_telemetryTopic,
       sizeof(s_telemetryTopic),
+      MQTT_TOPIC_PREFIX,
+      s_deviceId);
+  mqttBuildSoilTopic(
+      s_soilTopic,
+      sizeof(s_soilTopic),
       MQTT_TOPIC_PREFIX,
       s_deviceId);
   char stateTopic[72];
@@ -59,6 +74,7 @@ void setup() {
   lampCommandInit(s_deviceId, stateTopic);
 
   telemetryInit(s_deviceId, s_telemetryTopic);
+  soilReportInit(s_deviceId, s_soilTopic);
   Serial.printf("Device ID: %s\n", s_deviceId);
   Serial.printf("Tópico: %s\n", s_telemetryTopic);
   Serial.printf("Telemetria a cada %.0f s\n", TELEMETRY_INTERVAL_S);
@@ -73,8 +89,9 @@ void setup() {
   }
 
   activeSignal(telemetryTask)();
+  soilReportTask();
   tickScreen();
-  timerTelemetry.attach(TELEMETRY_INTERVAL_S, activeSignal(telemetryTask));
+  timerHourly.attach(TELEMETRY_INTERVAL_S, hourlyIot);
   timerScreen.attach(SCREEN_REFRESH_INTERVAL_S, tickScreen);
 }
 

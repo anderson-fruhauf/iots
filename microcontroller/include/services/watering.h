@@ -1,0 +1,2 @@
+bool shouldWater();
+void water();

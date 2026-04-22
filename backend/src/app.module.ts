@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { DevicesModule } from './devices/devices.module';
+import { SoilModule } from './soil/soil.module';
 import { TelemetryModule } from './telemetry/telemetry.module';
 import { typeOrmOptions } from './typeorm.config';
 
@@ -13,6 +14,7 @@ import { typeOrmOptions } from './typeorm.config';
     }),
     TelemetryModule,
     DevicesModule,
+    SoilModule,
   ],
   controllers: [AppController],
   providers: [],

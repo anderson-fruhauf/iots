@@ -41,6 +41,29 @@ export function uniqueDeviceIds(readings: TelemetryReading[]): string[] {
   return out;
 }
 
+type DeviceIdHolder = { deviceId: string };
+
+export function mergeDeviceIds(
+  fromTelemetry: TelemetryReading[],
+  fromSoil: DeviceIdHolder[],
+): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const r of fromTelemetry) {
+    if (!seen.has(r.deviceId)) {
+      seen.add(r.deviceId);
+      out.push(r.deviceId);
+    }
+  }
+  for (const s of fromSoil) {
+    if (s.deviceId && !seen.has(s.deviceId)) {
+      seen.add(s.deviceId);
+      out.push(s.deviceId);
+    }
+  }
+  return out;
+}
+
 /** Primeiro item da lista (ordenada da mais recente para a mais antiga). */
 export function pickLatest(
   readings: TelemetryReading[],
