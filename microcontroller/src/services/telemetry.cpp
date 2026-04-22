@@ -1,6 +1,7 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <DHTesp.h>
-#include <cstdio>
+#include <cmath>
 
 #include "app_config.h"
 #include "infra/mqtt.h"
@@ -42,18 +43,22 @@ TelemetryData getSensorData() {
 }
 
 void telemetryPublish(const TelemetryData& data) {
-  if (!data.ok) {
+  if (!data.ok || s_deviceId == nullptr || s_telemetryTopic == nullptr) {
     return;
   }
 
-  char payload[160];
-  snprintf(
-      payload,
-      sizeof(payload),
-      "{\"deviceId\":\"%s\",\"temperature\":%.1f,\"humidity\":%.1f,\"unit\":\"C\"}",
-      s_deviceId,
-      data.temperature,
-      data.humidity);
-
+  JsonDocument doc;
+  doc["deviceId"] = s_deviceId;
+  doc["temperature"] = std::round(data.temperature * 10.0f) / 10.0f;
+  doc["humidity"] = std::round(data.humidity * 10.0f) / 10.0f;
+  doc["unit"] = "C";
+  if (doc.overflowed()) {
+    return;
+  }
+  char payload[192];
+  const size_t n = serializeJson(doc, payload, sizeof(payload));
+  if (n >= sizeof(payload)) {
+    return;
+  }
   mqttPublish(s_telemetryTopic, payload, false);
 }

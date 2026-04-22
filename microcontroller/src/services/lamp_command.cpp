@@ -1,3 +1,4 @@
+#include <ArduinoJson.h>
 #include <cstring>
 
 #include "infra/lamp.h"
@@ -16,22 +17,36 @@ void lampCommandInit(const char* deviceId, const char* stateTopic) {
   s_initialized = true;
 }
 
+static bool lampValueFromJson(JsonVariant v, bool* out) {
+  if (v.isNull()) {
+    return false;
+  }
+  if (v.is<bool>()) {
+    *out = v.as<bool>();
+    return true;
+  }
+  if (v.is<long>() || v.is<int>()) {
+    *out = v.as<long>() != 0;
+    return true;
+  }
+  if (v.is<double>() || v.is<float>()) {
+    *out = v.as<double>() != 0.0;
+    return true;
+  }
+  return false;
+}
+
 void lampCommandOnMqttPayload(const char* payload) {
-  if (!s_initialized) {
+  if (!s_initialized || payload == nullptr) {
     return;
   }
-  if (strstr(payload, "\"lamp\"") == nullptr) {
+  JsonDocument doc;
+  DeserializationError err = deserializeJson(doc, payload);
+  if (err) {
     return;
   }
   bool on = false;
-  if (strstr(payload, "\"lamp\":true") != nullptr ||
-      strstr(payload, "\"lamp\": true") != nullptr) {
-    on = true;
-  } else if (
-      strstr(payload, "\"lamp\":false") != nullptr ||
-      strstr(payload, "\"lamp\": false") != nullptr) {
-    on = false;
-  } else {
+  if (!lampValueFromJson(doc["lamp"], &on)) {
     return;
   }
   lampSet(on);

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <cstdio>
@@ -71,13 +72,17 @@ void mqttPublishLampState(
     const char* stateTopic,
     const char* deviceId,
     bool lampOn) {
-  char payload[96];
-  snprintf(
-      payload,
-      sizeof(payload),
-      "{\"deviceId\":\"%s\",\"lamp\":%s}",
-      deviceId,
-      lampOn ? "true" : "false");
+  JsonDocument doc;
+  doc["deviceId"] = deviceId;
+  doc["lamp"] = lampOn;
+  if (doc.overflowed()) {
+    return;
+  }
+  char payload[128];
+  const size_t n = serializeJson(doc, payload, sizeof(payload));
+  if (n >= sizeof(payload)) {
+    return;
+  }
   mqttPublish(stateTopic, payload, true);
 }
 
