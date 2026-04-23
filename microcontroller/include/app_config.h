@@ -22,8 +22,8 @@ static constexpr int SOIL_IRRIGATE_OFF_ABOVE_PCT = 80;
 static constexpr float SOIL_IRRIGATION_CHECK_INTERVAL_S = 30.0f;
 /** Com irrigação ativa, reavalia o solo a cada 1 s até atingir o alvo. */
 static constexpr uint32_t SOIL_IRRIGATION_STEP_MS = 1000U;
-/** Corta o relé se a irrigação exceder este tempo (falha de leitura / gotejamento muito lento). */
-static constexpr uint32_t SOIL_IRRIGATION_MAX_ON_MS = 10U * 60U * 1000U;
+/** Corta o relé se a irrigação exceder 20s (falha de leitura / gotejamento muito lento). */
+static constexpr uint32_t SOIL_IRRIGATION_MAX_ON_MS = 20U * 1000U;
 
 // relay — muitos módulos acionam com IN em LOW (fotoacoplador)
 static constexpr bool RELAY_ACTIVE_LOW = true;
