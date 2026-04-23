@@ -41,10 +41,11 @@ static constexpr int OLED_HEIGHT = 64;
 static constexpr uint32_t WIFI_CONNECT_MS = 20000;
 static constexpr uint32_t MQTT_FAIL_LOG_INTERVAL_MS = 5000;
 
-/**
- * Intervalo entre envios (segundos) — telemetria e solo (mesmo Ticker em main).
- */
-static constexpr float TELEMETRY_INTERVAL_S = 30;
+/** Intervalo entre envios de temperatura e humidade ambiente (MQTT), em segundos. */
+static constexpr float TELEMETRY_INTERVAL_S = 3600.0f;
+
+/** Intervalo entre envios de umidade do solo (MQTT), em segundos. */
+static constexpr float SOIL_REPORT_INTERVAL_S = 30.0f;
 
 /** Período para `Ticker::attach(segundos, ...)` — redes + sensor e um único redesenho OLED. */
 static constexpr float SCREEN_REFRESH_INTERVAL_S = 10.0f;

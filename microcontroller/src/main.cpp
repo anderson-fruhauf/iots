@@ -32,14 +32,14 @@
 static char s_deviceId[20];
 static char s_telemetryTopic[72];
 static char s_soilTopic[72];
-static Ticker timerHourly;
+static Ticker timerTelemetry;
+static Ticker timerSoil;
 static Ticker timerScreen;
 static Ticker timerIrrigation;
 
-static void hourlyIot() {
-  activeSignal(telemetryTask)();
-  activeSignal(soilReportTask)();
-}
+static void tickTelemetry() { activeSignal(telemetryTask)(); }
+
+static void tickSoilReport() { activeSignal(soilReportTask)(); }
 
 static void tickScreen() {
   screenSetNetwork(WiFi.status() == WL_CONNECTED, mqttConnected());
@@ -80,7 +80,8 @@ void setup() {
   soilReportInit(s_deviceId, s_soilTopic);
   Serial.printf("Device ID: %s\n", s_deviceId);
   Serial.printf("Tópico: %s\n", s_telemetryTopic);
-  Serial.printf("Telemetria a cada %.0f s\n", TELEMETRY_INTERVAL_S);
+  Serial.printf("Telemetria (temp/umidade) a cada %.0f s\n", TELEMETRY_INTERVAL_S);
+  Serial.printf("Umidade do solo (MQTT) a cada %.0f s\n", SOIL_REPORT_INTERVAL_S);
 
   wifiSetup();
   mqttInitTransport();
@@ -94,7 +95,8 @@ void setup() {
   activeSignal(telemetryTask)();
   soilReportTask();
   tickScreen();
-  timerHourly.attach(TELEMETRY_INTERVAL_S, hourlyIot);
+  timerTelemetry.attach(TELEMETRY_INTERVAL_S, tickTelemetry);
+  timerSoil.attach(SOIL_REPORT_INTERVAL_S, tickSoilReport);
   timerScreen.attach(SCREEN_REFRESH_INTERVAL_S, tickScreen);
   irrigationInit();
   timerIrrigation.attach(SOIL_IRRIGATION_CHECK_INTERVAL_S, irrigationOnMinuteTick);
