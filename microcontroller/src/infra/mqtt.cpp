@@ -57,6 +57,14 @@ void mqttBuildSoilTopic(
   snprintf(out, outLen, "%s/%s/soil", topicPrefix, deviceId);
 }
 
+void mqttBuildIrrigationTopic(
+    char* out,
+    size_t outLen,
+    const char* topicPrefix,
+    const char* deviceId) {
+  snprintf(out, outLen, "%s/%s/irrigation", topicPrefix, deviceId);
+}
+
 static void (*s_commandHandler)(const char* payload) = nullptr;
 
 static void mqttInternalCallback(char* topic, byte* payload, unsigned int length) {

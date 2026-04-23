@@ -3,6 +3,7 @@ export const IOTS_DEVICE_TOPIC_PREFIX = 'iots/device';
 export const MQTT_PATTERN_DEVICE_STATE = `${IOTS_DEVICE_TOPIC_PREFIX}/+/state`;
 export const MQTT_PATTERN_DEVICE_TELEMETRY = `${IOTS_DEVICE_TOPIC_PREFIX}/+/telemetry`;
 export const MQTT_PATTERN_DEVICE_SOIL = `${IOTS_DEVICE_TOPIC_PREFIX}/+/soil`;
+export const MQTT_PATTERN_DEVICE_IRRIGATION = `${IOTS_DEVICE_TOPIC_PREFIX}/+/irrigation`;
 
 export function deviceCommandTopic(deviceId: string): string {
   return `${IOTS_DEVICE_TOPIC_PREFIX}/${deviceId}/command`;
@@ -12,7 +13,7 @@ const topicPrefixParts = IOTS_DEVICE_TOPIC_PREFIX.split('/');
 
 export function extractDeviceIdFromDeviceTopic(
   topic: string,
-  suffix: 'state' | 'telemetry' | 'soil',
+  suffix: 'state' | 'telemetry' | 'soil' | 'irrigation',
 ): string | null {
   const parts = topic.split('/');
   if (parts.length < topicPrefixParts.length + 2) {

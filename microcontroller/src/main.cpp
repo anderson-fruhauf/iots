@@ -25,6 +25,7 @@
 #include "services/lamp_command.h"
 #include "services/telemetry.h"
 #include "services/soil_report.h"
+#include "services/irrigation_report.h"
 #include "services/watering.h"
 #include "infra/relay.h"
 #include "infra/soil_moisture.h"
@@ -32,6 +33,7 @@
 static char s_deviceId[20];
 static char s_telemetryTopic[72];
 static char s_soilTopic[72];
+static char s_irrigationTopic[72];
 static Ticker timerTelemetry;
 static Ticker timerSoil;
 static Ticker timerScreen;
@@ -68,6 +70,11 @@ void setup() {
       sizeof(s_soilTopic),
       MQTT_TOPIC_PREFIX,
       s_deviceId);
+  mqttBuildIrrigationTopic(
+      s_irrigationTopic,
+      sizeof(s_irrigationTopic),
+      MQTT_TOPIC_PREFIX,
+      s_deviceId);
   char stateTopic[72];
   mqttBuildStateTopic(
       stateTopic,
@@ -78,6 +85,7 @@ void setup() {
 
   telemetryInit(s_deviceId, s_telemetryTopic);
   soilReportInit(s_deviceId, s_soilTopic);
+  irrigationReportInit(s_deviceId, s_irrigationTopic);
   Serial.printf("Device ID: %s\n", s_deviceId);
   Serial.printf("Tópico: %s\n", s_telemetryTopic);
   Serial.printf("Telemetria (temp/umidade) a cada %.0f s\n", TELEMETRY_INTERVAL_S);

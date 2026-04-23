@@ -27,6 +27,12 @@ void mqttBuildSoilTopic(
     const char* topicPrefix,
     const char* deviceId);
 
+void mqttBuildIrrigationTopic(
+    char* out,
+    size_t outLen,
+    const char* topicPrefix,
+    const char* deviceId);
+
 /**
  * Callback ao receber payload em `{prefix}/{deviceId}/command`.
  * `payload` é terminado em '\\0' (uso interno; não retido entre chamadas).

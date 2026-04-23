@@ -2,7 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import type { Route } from "./+types/soil.$deviceId";
 import { GlassCard } from "~/components/ui/GlassCard";
-import { fetchSoilByDevice, type SoilState } from "~/lib/soil";
+import {
+  fetchIrrigationHistoryByDevice,
+  fetchSoilByDevice,
+  formatIrrigationDurationMs,
+  IRRIGATION_LITERS_PER_HOUR,
+  type IrrigationEvent,
+  type SoilState,
+  volumeLitersFromIrrigationDurationMs,
+} from "~/lib/soil";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,6 +23,7 @@ export default function SoilDetail() {
   const { deviceId: rawId } = useParams();
   const deviceId = rawId?.trim() ?? "";
   const [row, setRow] = useState<SoilState | null>(null);
+  const [irrigation, setIrrigation] = useState<IrrigationEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,10 +32,15 @@ export default function SoilDetail() {
     setLoading(true);
     setError(null);
     try {
-      const s = await fetchSoilByDevice(deviceId);
+      const [s, h] = await Promise.all([
+        fetchSoilByDevice(deviceId),
+        fetchIrrigationHistoryByDevice(deviceId).catch(() => [] as IrrigationEvent[]),
+      ]);
       setRow(s);
+      setIrrigation(h);
     } catch (e) {
       setRow(null);
+      setIrrigation(null);
       setError(
         e instanceof Error ? e.message : "Não foi possível carregar o solo.",
       );
@@ -71,7 +85,8 @@ export default function SoilDetail() {
             </h1>
             <p className="mt-2 max-w-xl text-violet-200/75">
               Umidade estimada (0% seco, 100% muito húmido) e leitura bruta do
-              ADC. Atualiza na hora no dispositivo.
+              ADC. Cada fim de irrigação registra duração; o volume exibido usa
+              aprox. {IRRIGATION_LITERS_PER_HOUR} L/h.
             </p>
           </div>
           <button
@@ -129,6 +144,53 @@ export default function SoilDetail() {
           </div>
         ) : !error ? (
           <p className="text-violet-200/80">Sem dados.</p>
+        ) : null}
+      </GlassCard>
+
+      <GlassCard className="relative overflow-hidden">
+        <div className="pointer-events-none absolute -left-6 top-0 h-28 w-28 rounded-full bg-sky-500/15 blur-2xl" />
+        <h2 className="relative font-display text-lg font-bold text-white">
+          Histórico de irrigação
+        </h2>
+        <p className="relative mt-1 text-sm text-violet-200/75">
+          Duração medida no dispositivo. Volume ≈ duração × {IRRIGATION_LITERS_PER_HOUR}{" "}
+          L/h.
+        </p>
+        {loading && irrigation === null && !error ? (
+          <p className="relative mt-4 text-violet-200/70">Carregando…</p>
+        ) : irrigation && irrigation.length > 0 ? (
+          <ul className="relative mt-4 max-h-80 space-y-2 overflow-y-auto pr-1 text-sm">
+            {irrigation.map((ev) => {
+              const vol = volumeLitersFromIrrigationDurationMs(ev.durationMs);
+              return (
+                <li
+                  key={String(ev.id)}
+                  className="flex flex-col gap-1 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <span className="text-violet-200/90">
+                    {new Date(ev.createdAt).toLocaleString("pt-BR", {
+                      dateStyle: "short",
+                      timeStyle: "medium",
+                    })}
+                  </span>
+                  <div className="flex flex-wrap gap-x-5 gap-y-1 tabular-nums text-violet-100">
+                    <span>
+                      {formatIrrigationDurationMs(ev.durationMs)}
+                    </span>
+                    <span className="text-emerald-200/95">
+                      ≈{" "}
+                      {vol.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}{" "}
+                      L
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : !loading && !error ? (
+          <p className="relative mt-4 text-violet-200/80">
+            Ainda não há registos de irrigação para este dispositivo.
+          </p>
         ) : null}
       </GlassCard>
     </div>

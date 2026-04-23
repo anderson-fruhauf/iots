@@ -3,6 +3,7 @@
 #include "app_config.h"
 #include "infra/relay.h"
 #include "infra/soil_moisture.h"
+#include "services/irrigation_report.h"
 #include "services/watering.h"
 
 namespace {
@@ -54,7 +55,9 @@ void irrigationService() {
 
   if (wet >= SOIL_IRRIGATE_OFF_ABOVE_PCT ||
       now - s_irrigationStartedMs >= SOIL_IRRIGATION_MAX_ON_MS) {
+    const uint32_t durationMs = now - s_irrigationStartedMs;
     setRelay(RelayChannel::Ch1, false);
     s_irrigationActive = false;
+    irrigationReportSessionEnd(durationMs);
   }
 }
