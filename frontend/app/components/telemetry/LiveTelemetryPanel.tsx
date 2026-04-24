@@ -1,4 +1,7 @@
+import { Fragment } from "react";
+
 import { LampControl } from "~/components/telemetry/LampControl";
+import { RgbLampControl } from "~/components/telemetry/RgbLampControl";
 import { GlassCard } from "~/components/ui/GlassCard";
 import {
   pickLatest,
@@ -11,6 +14,13 @@ function lampLabel(index: number, total: number): string {
     return "Lâmpada principal";
   }
   return index === 0 ? "Lâmpada principal" : `Lâmpada ${index + 1}`;
+}
+
+function rgbLampLabel(index: number, total: number): string {
+  if (total <= 1) {
+    return "Lâmpada RGB";
+  }
+  return index === 0 ? "Lâmpada RGB" : `Lâmpada RGB ${index + 1}`;
 }
 
 function formatTime(iso: string) {
@@ -147,11 +157,16 @@ export function LiveTelemetryPanel({ readings, loading, error, onRefresh }: Prop
           </h2>
           <div className="flex flex-wrap gap-4">
             {deviceIdsForLamp.map((id, index) => (
-              <LampControl
-                key={id}
-                deviceId={id}
-                label={lampLabel(index, deviceIdsForLamp.length)}
-              />
+              <Fragment key={id}>
+                <LampControl
+                  deviceId={id}
+                  label={lampLabel(index, deviceIdsForLamp.length)}
+                />
+                <RgbLampControl
+                  deviceId={id}
+                  label={rgbLampLabel(index, deviceIdsForLamp.length)}
+                />
+              </Fragment>
             ))}
           </div>
         </section>

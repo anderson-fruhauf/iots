@@ -6,6 +6,15 @@
 static constexpr int LED_PIN = 2;
 /** Lâmpada / carga (ex.: relé) — GPIO 19. */
 static constexpr int LAMP_PIN = 19;
+/**
+ * LED RGB (PWM). Se só o vermelho acender: 34/35 nao suportam saida (so ADC) — G e B têm de ir a GPIOs
+ * de saida. R=32; G e B: se verde/azul trocados no fio, inverta LAMP_RGB_PIN_G/B. Atual: G=26, B=25.
+ * Anodo comum: LAMP_RGB_COMMON_ANODE = true.
+ */
+static constexpr int LAMP_RGB_PIN_R = 32;
+static constexpr int LAMP_RGB_PIN_G = 26;
+static constexpr int LAMP_RGB_PIN_B = 25;
+static constexpr bool LAMP_RGB_COMMON_ANODE = false;
 static constexpr int DHT_PIN = 23;
 
 // sensor de umidade do solo (ADC: seco ~ alto, húmido ~ baixo)

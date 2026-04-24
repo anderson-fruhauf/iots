@@ -39,10 +39,14 @@ void mqttBuildIrrigationTopic(
  */
 void mqttSetCommandHandler(void (*handler)(const char* payload));
 
-void mqttPublishLampState(
+void mqttPublishDeviceState(
     const char* stateTopic,
     const char* deviceId,
-    bool lampOn);
+    bool lampOn,
+    bool rgbOn,
+    uint8_t r,
+    uint8_t g,
+    uint8_t b);
 
 /** TLS / buffer / timeout do cliente (chamar antes de apply/reconnect). */
 void mqttInitTransport();

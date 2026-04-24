@@ -16,6 +16,7 @@
 
 #include "device/device_id.h"
 #include "infra/lamp.h"
+#include "infra/rgb_lamp.h"
 #include "infra/led.h"
 #include "infra/mqtt.h"
 #include "infra/screen.h"
@@ -54,6 +55,7 @@ void setup() {
   delay(200);
   ledInit();
   lampInit();
+  rgbLampInit();
   screenInit();
   setupSoilMoisture();
   setupRelay();

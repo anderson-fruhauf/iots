@@ -84,17 +84,26 @@ void mqttSetCommandHandler(void (*handler)(const char* payload)) {
   s_commandHandler = handler;
 }
 
-void mqttPublishLampState(
+void mqttPublishDeviceState(
     const char* stateTopic,
     const char* deviceId,
-    bool lampOn) {
+    bool lampOn,
+    bool rgbOn,
+    uint8_t r,
+    uint8_t g,
+    uint8_t b) {
   JsonDocument doc;
   doc["deviceId"] = deviceId;
   doc["lamp"] = lampOn;
+  JsonObject jrgb = doc["lampRgb"].to<JsonObject>();
+  jrgb["on"] = rgbOn;
+  jrgb["r"] = r;
+  jrgb["g"] = g;
+  jrgb["b"] = b;
   if (doc.overflowed()) {
     return;
   }
-  char payload[128];
+  char payload[256];
   const size_t n = serializeJson(doc, payload, sizeof(payload));
   if (n >= sizeof(payload)) {
     return;

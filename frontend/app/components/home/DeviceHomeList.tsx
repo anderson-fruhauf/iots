@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { Link } from "react-router";
 import { GlassCard } from "~/components/ui/GlassCard";
+import { RgbLampControl } from "~/components/telemetry/RgbLampControl";
 import { useLampState } from "~/lib/hooks/useLampState";
 import type { SoilState } from "~/lib/soil";
 import type { TelemetryReading } from "~/lib/telemetry";
@@ -13,17 +14,19 @@ type Props = {
 };
 
 function labelForDevice(
-  kind: "lamp" | "sensor" | "soil",
+  kind: "lamp" | "rgb" | "sensor" | "soil",
   index: number,
   total: number,
 ): string {
   if (total <= 1) {
     if (kind === "lamp") return "Lâmpada";
+    if (kind === "rgb") return "Lâmpada RGB";
     if (kind === "sensor") return "Sensor";
     return "Solo";
   }
   const n = index + 1;
   if (kind === "lamp") return `Lâmpada ${n}`;
+  if (kind === "rgb") return `Lâmpada RGB ${n}`;
   if (kind === "sensor") return `Sensor ${n}`;
   return `Solo ${n}`;
 }
@@ -118,6 +121,20 @@ function LampDeviceCard({
           {error}
         </p>
       )}
+    </div>
+  );
+}
+
+function RgbLampDeviceCard({
+  deviceId,
+  label,
+}: {
+  deviceId: string;
+  label: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <RgbLampControl deviceId={deviceId} label={label} />
     </div>
   );
 }
@@ -254,8 +271,8 @@ export function DeviceHomeList({
           Dispositivos
         </h1>
         <p className="mt-2 max-w-xl text-violet-200/75">
-          Lâmpada, sensores (ar) e umidade do solo. Toque em cada bloco para
-          detalhes ou ação.
+          Lâmpada, lâmpada RGB, sensores (ar) e umidade do solo. Toque em cada
+          bloco para detalhes ou ação.
         </p>
       </div>
 
@@ -290,6 +307,12 @@ export function DeviceHomeList({
                     <LampDeviceCard
                       deviceId={deviceId}
                       label={labelForDevice("lamp", index, ids.length)}
+                    />
+                  </li>
+                  <li className="w-40 min-w-0 sm:w-44">
+                    <RgbLampDeviceCard
+                      deviceId={deviceId}
+                      label={labelForDevice("rgb", index, ids.length)}
                     />
                   </li>
                   <li className="w-40 min-w-0 sm:w-44">
