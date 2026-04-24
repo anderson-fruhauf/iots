@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <cmath>
+
 #include "esp32-hal-ledc.h"
 
 #include "app_config.h"
@@ -15,6 +17,36 @@ static uint8_t s_r = 255;
 static uint8_t s_g = 255;
 static uint8_t s_b = 255;
 
+/**
+ * sRGB: canal 0-255 do app -> percepcao/LED: curva aprox. x^gamma (PWM linear).
+ * Mantem s_r/s_g/s_b logicos; so a saida do LED e corrigida.
+ */
+static uint8_t gamma8(uint8_t v) {
+  if (LAMP_RGB_GAMMA <= 1.0f) {
+    return v;
+  }
+  const float t = static_cast<float>(v) / 255.0f;
+  const int o = static_cast<int>(0.5f + 255.0f * std::pow(t, LAMP_RGB_GAMMA));
+  if (o <= 0) {
+    return 0U;
+  }
+  if (o >= 255) {
+    return 255U;
+  }
+  return static_cast<uint8_t>(o);
+}
+
+static uint8_t scaleGain(uint8_t v, float gain) {
+  const int o = static_cast<int>(0.5f + static_cast<float>(v) * gain);
+  if (o <= 0) {
+    return 0U;
+  }
+  if (o >= 255) {
+    return 255U;
+  }
+  return static_cast<uint8_t>(o);
+}
+
 static uint8_t dutyForPin(uint8_t v) {
 #if LAMP_RGB_COMMON_ANODE
   return static_cast<uint8_t>(255U - v);
@@ -24,9 +56,12 @@ static uint8_t dutyForPin(uint8_t v) {
 }
 
 static void writePwm(uint8_t r, uint8_t g, uint8_t b) {
-  ledcWrite(CH_R, dutyForPin(r));
-  ledcWrite(CH_G, dutyForPin(g));
-  ledcWrite(CH_B, dutyForPin(b));
+  const uint8_t rP = gamma8(scaleGain(r, LAMP_RGB_GAIN_R));
+  const uint8_t image.pnggP = gamma8(scaleGain(g, LAMP_RGB_GAIN_G));
+  const uint8_t bP = gamma8(scaleGain(b, LAMP_RGB_GAIN_B));
+  ledcWrite(CH_R, dutyForPin(rP));
+  ledcWrite(CH_G, dutyForPin(gP));
+  ledcWrite(CH_B, dutyForPin(bP));
 }
 
 void rgbLampInit() {

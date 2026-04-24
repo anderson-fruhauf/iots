@@ -15,6 +15,14 @@ static constexpr int LAMP_RGB_PIN_R = 32;
 static constexpr int LAMP_RGB_PIN_G = 26;
 static constexpr int LAMP_RGB_PIN_B = 25;
 static constexpr bool LAMP_RGB_COMMON_ANODE = false;
+/** Correcao gama no PWM (sRGB ~2.2). Ajuste 1.8–2.6 se a cor ainda nao coincidir com o app. 1.0 = sem correcao. */
+static constexpr float LAMP_RGB_GAMMA = 2.2f;
+/**
+ * Ganhos lineares por LED (0–~1.2). O vermelho costuma parecer mais forte: amarelo fica “laranjado”.
+ */
+static constexpr float LAMP_RGB_GAIN_R = 0.70f;
+static constexpr float LAMP_RGB_GAIN_G = 1.0f;
+static constexpr float LAMP_RGB_GAIN_B = 1.13f;
 static constexpr int DHT_PIN = 23;
 
 // sensor de umidade do solo (ADC: seco ~ alto, húmido ~ baixo)
